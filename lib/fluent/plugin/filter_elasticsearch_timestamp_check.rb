@@ -16,7 +16,7 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      existing = record['timestamp'] || record['@timestamp']
+      existing = record['@timestamp'] || record['timestamp'] || record['time']
       if existing
         record['@timestamp'] =
           DateTime.parse(existing).strftime('%Y-%m-%dT%H:%M:%S%z')
