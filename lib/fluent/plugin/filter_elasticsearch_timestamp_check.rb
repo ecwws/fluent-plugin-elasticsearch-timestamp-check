@@ -19,14 +19,14 @@ module Fluent
       existing = record['@timestamp'] || record['timestamp'] || record['time']
       if existing
         record['@timestamp'] =
-          DateTime.parse(existing).strftime('%Y-%m-%dT%H:%M:%S%z')
+          DateTime.parse(existing).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
         record['fluent_converted_timestamp'] =
-          DateTime.parse(existing).strftime('%Y-%m-%dT%H:%M:%S%z')
+          DateTime.parse(existing).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
         $log.debug("Timestamp parsed: #{record['@timestamp']}")
       else
-        record['@timestamp'] = Time.now.strftime('%Y-%m-%dT%H:%M:%S%z')
+        record['@timestamp'] = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%L%z')
         record['fluent_added_timestamp'] =
-          Time.now.strftime('%Y-%m-%dT%H:%M:%S%z')
+          Time.now.strftime('%Y-%m-%dT%H:%M:%S.%L%z')
         $log.debug("Timestamp added: #{record['@timestamp']}")
       end
       record
