@@ -1,4 +1,6 @@
-module Fluent
+require 'fluent/plugin/filter'
+
+module Fluent::Plugin
   class ElasticsearchTimestampCheckFilter < Filter
     Fluent::Plugin.register_filter('elasticsearch_timestamp_check', self)
 
@@ -16,12 +18,24 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      existing = record['@timestamp'] || record['timestamp'] || record['time']
-      if existing
+      timestamps = [ record['@timestamp'], record['timestamp'], record['time'] ]
+      timestamps.each do |timestamp|
+        begin
+          DateTime.parse(timestamp)
+          valid = timestamp
+          break
+        rescue ArgumentError
+          next
+        else
+          valid = false
+        end
+      end
+
+      if valid
         record['@timestamp'] =
-          DateTime.parse(existing).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+          DateTime.parse(valid).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
         record['fluent_converted_timestamp'] =
-          DateTime.parse(existing).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+          DateTime.parse(valid).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
         $log.debug("Timestamp parsed: #{record['@timestamp']}")
       else
         record['@timestamp'] = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%L%z')
