@@ -19,15 +19,16 @@ module Fluent::Plugin
 
     def filter(tag, time, record)
       timestamps = [ record['@timestamp'], record['timestamp'], record['time'] ]
+      valid = false
       timestamps.each do |timestamp|
         begin
-          DateTime.parse(timestamp)
-          valid = timestamp
-          break
+          if timestamp then
+            DateTime.parse(timestamp)
+            valid = timestamp
+            break
+          end
         rescue ArgumentError
           next
-        else
-          valid = false
         end
       end
 
