@@ -18,7 +18,7 @@ module Fluent::Plugin
     end
 
     def filter(tag, time, record)
-      timestamps = [ record['@timestamp'], record['timestamp'], record['time'] ]
+      timestamps = [ record['@timestamp'], record['timestamp'], record['time'], record['syslog_timestamp'] ]
       valid = false
       timestamps.each do |timestamp|
         begin
