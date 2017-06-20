@@ -18,32 +18,24 @@ module Fluent::Plugin
     end
 
     def filter(tag, time, record)
-      timestamps = [ record['@timestamp'], record['timestamp'], record['time'] ]
-      valid = false
-      timestamps.each do |timestamp|
+      %w{@timestamp timestamp time syslog_timestamp}.map do |field|
+        record[field]
+      end.compact.each do |timestamp|
         begin
-          if timestamp then
-            DateTime.parse(timestamp)
-            valid = timestamp
-            break
-          end
+          record['@timestamp'] = record['fluent_converted_timestamp'] =
+            DateTime.parse(timestamp).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+          $log.debug("Timestamp parsed: #{record['@timestamp']}")
+          break
         rescue ArgumentError
-          next
         end
       end
 
-      if valid
-        record['@timestamp'] =
-          DateTime.parse(valid).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
-        record['fluent_converted_timestamp'] =
-          DateTime.parse(valid).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
-        $log.debug("Timestamp parsed: #{record['@timestamp']}")
-      else
-        record['@timestamp'] = Time.now.strftime('%Y-%m-%dT%H:%M:%S.%L%z')
-        record['fluent_added_timestamp'] =
+      unless record['fluent_converted_timestamp']
+        record['@timestamp'] = record['fluent_added_timestamp'] =
           Time.now.strftime('%Y-%m-%dT%H:%M:%S.%L%z')
         $log.debug("Timestamp added: #{record['@timestamp']}")
       end
+
       record
     end
   end

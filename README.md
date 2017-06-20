@@ -16,10 +16,11 @@ elasticsearch.
 * If *@timestamp* field already exists, it will ensure the format is correct
   by parse and convert to format '%Y-%m-%dT%H:%M:%S%z'.
 
-* If a field named *timestamp* exists, it will parse that field and conver it to
-  format '%Y-%m-%dT%H:%M:%S%z' then store it in *@timestamp* field.
+* If a field named *timestamp* or *time* or *syslog_timestamp* exists, it will
+  parse that field and conver it to format '%Y-%m-%dT%H:%M:%S%z' then store it
+  in *@timestamp* field.
 
-* If neither of the above field exists, it will insert current time in
+* If none of the above field exists, it will insert current time in
   '%Y-%m-%dT%H:%M:%S%z' format as the *@timestamp* field.
 
 ## Usage
