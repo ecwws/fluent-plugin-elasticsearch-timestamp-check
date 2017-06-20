@@ -22,6 +22,21 @@ module Fluent::Plugin
         record[field]
       end.compact.each do |timestamp|
         begin
+          # all digit entry would be treated as epoch seconds or epoch millis
+          if !!(timestamp =~ /\A[-+]?\d+\z/)
+            num = timestamp.to_i
+            # epoch second or epoch millis should be either 10 or 13 digits
+            # other length should be considered invalid (until the next digit
+            # rollover at 2286-11-20  17:46:40 Z
+            next unless [10, 13].include?(num.to_s.length)
+            record['@timestamp'] = record['fluent_converted_timestamp'] =
+              Time.at(
+                num / (10 ** (num.to_s.length - 10))
+              ).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+            break
+          end
+
+          # normal timestamp string processing
           record['@timestamp'] = record['fluent_converted_timestamp'] =
             DateTime.parse(timestamp).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
           $log.debug("Timestamp parsed: #{record['@timestamp']}")
