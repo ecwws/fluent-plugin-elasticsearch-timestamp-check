@@ -48,7 +48,7 @@ class TestElasticsearchTimestampCheckFilter < Test::Unit::TestCase
       d.feed({'test' => 'notime'}.merge(timekey => timestamp))
     end
     filtered = d.filtered.map{|e| e.last}.first
-    num = timestamp.to_i
+    num = timestamp.to_f
     formatted_time = Time.at(
       num / (10 ** ((Math.log10(num).to_i + 1) - 10))
     ).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
