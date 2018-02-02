@@ -9,6 +9,18 @@ class TestElasticsearchTimestampCheckFilter < Test::Unit::TestCase
     Fluent::Test::Driver::Filter.new(Fluent::Plugin::ElasticsearchTimestampCheckFilter).configure(conf)
   end
 
+  def test_configure
+    assert_raise(Fluent::ConfigError) do
+      create_driver(%[subsecond_precision -3])
+    end
+    assert_raise(Fluent::ConfigError) do
+      create_driver(%[subsecond_precision 0])
+    end
+    assert_nothing_raised do
+      create_driver(%[subsecond_precision 1])
+    end
+  end
+
   def test_added_timestamp
     d = create_driver
     d.run(default_tag: 'test') do

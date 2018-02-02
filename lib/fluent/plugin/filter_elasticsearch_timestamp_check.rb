@@ -9,6 +9,7 @@ module Fluent::Plugin
     def configure(conf)
       super
       require 'date'
+      raise Fluent::ConfigError, "specify 1 or bigger number." if subsecond_precision < 1
       @strftime_format = "%Y-%m-%dT%H:%M:%S.%#{@subsecond_precision}N%z".freeze
     end
 
