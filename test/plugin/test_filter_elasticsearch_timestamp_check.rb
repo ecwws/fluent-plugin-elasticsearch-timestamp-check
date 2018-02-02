@@ -51,7 +51,29 @@ class TestElasticsearchTimestampCheckFilter < Test::Unit::TestCase
     num = timestamp.to_f
     formatted_time = Time.at(
       num / (10 ** ((Math.log10(num).to_i + 1) - 10))
-    ).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+    ).strftime('%Y-%m-%dT%H:%M:%S.%3N%z')
+    assert_true(filtered.key?("@timestamp"))
+    assert_true(filtered.key?("fluent_converted_timestamp"))
+    assert_equal(formatted_time, filtered["fluent_converted_timestamp"])
+  end
+
+  data('@timestamp'       => '@timestamp',
+       'timestamp'        => 'timestamp',
+       'time'             => 'time',
+       'syslog_timestamp' => 'syslog_timestamp')
+  def test_timestamp_with_digit_and_nano_precision(data)
+    timekey = data
+    precision = 9
+    d = create_driver(%[subsecond_precision #{precision}])
+    timestamp = '1505800348899'
+    d.run(default_tag: 'test') do
+      d.feed({'test' => 'notime'}.merge(timekey => timestamp))
+    end
+    filtered = d.filtered.map{|e| e.last}.first
+    num = timestamp.to_f
+    formatted_time = Time.at(
+      num / (10 ** ((Math.log10(num).to_i + 1) - 10))
+    ).strftime("%Y-%m-%dT%H:%M:%S.%#{precision}N%z")
     assert_true(filtered.key?("@timestamp"))
     assert_true(filtered.key?("fluent_converted_timestamp"))
     assert_equal(formatted_time, filtered["fluent_converted_timestamp"])
