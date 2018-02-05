@@ -4,9 +4,13 @@ module Fluent::Plugin
   class ElasticsearchTimestampCheckFilter < Filter
     Fluent::Plugin.register_filter('elasticsearch_timestamp_check', self)
 
+    config_param :subsecond_precision, :integer, default: 3
+
     def configure(conf)
       super
       require 'date'
+      raise Fluent::ConfigError, "specify 1 or bigger number." if subsecond_precision < 1
+      @strftime_format = "%Y-%m-%dT%H:%M:%S.%#{@subsecond_precision}N%z".freeze
     end
 
     def start
@@ -32,13 +36,13 @@ module Fluent::Plugin
             record['@timestamp'] = record['fluent_converted_timestamp'] =
               Time.at(
                 num / (10 ** ((Math.log10(num).to_i + 1) - 10))
-              ).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+              ).strftime(@strftime_format)
             break
           end
 
           # normal timestamp string processing
           record['@timestamp'] = record['fluent_converted_timestamp'] =
-            DateTime.parse(timestamp).strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+            DateTime.parse(timestamp).strftime(@strftime_format)
           $log.debug("Timestamp parsed: #{record['@timestamp']}")
           break
         rescue ArgumentError
@@ -47,7 +51,7 @@ module Fluent::Plugin
 
       unless record['fluent_converted_timestamp']
         record['@timestamp'] = record['fluent_added_timestamp'] =
-          Time.now.strftime('%Y-%m-%dT%H:%M:%S.%L%z')
+          Time.now.strftime(@strftime_format)
         $log.debug("Timestamp added: #{record['@timestamp']}")
       end
 
