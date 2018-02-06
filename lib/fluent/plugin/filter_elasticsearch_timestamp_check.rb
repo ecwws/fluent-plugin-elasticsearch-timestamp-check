@@ -2,6 +2,8 @@ require 'fluent/plugin/filter'
 
 module Fluent::Plugin
   class ElasticsearchTimestampCheckFilter < Filter
+    attr_reader :timestamp_digits
+
     Fluent::Plugin.register_filter('elasticsearch_timestamp_check', self)
 
     config_param :subsecond_precision, :integer, default: 3
@@ -11,6 +13,15 @@ module Fluent::Plugin
       require 'date'
       raise Fluent::ConfigError, "specify 1 or bigger number." if subsecond_precision < 1
       @strftime_format = "%Y-%m-%dT%H:%M:%S.%#{@subsecond_precision}N%z".freeze
+      @timestamp_digits = configure_digits
+    end
+
+    def configure_digits
+      subepoch_precision = 10 + @subsecond_precision
+      timestamp_digits = [10, 13]
+      timestamp_digits << subepoch_precision
+      timestamp_digits.uniq!
+      timestamp_digits
     end
 
     def start
@@ -29,10 +40,11 @@ module Fluent::Plugin
           # all digit entry would be treated as epoch seconds or epoch millis
           if !!(timestamp =~ /\A[-+]?\d+\z/)
             num = timestamp.to_f
-            # epoch second or epoch millis should be either 10 or 13 digits
+            # By default, epoch second or epoch millis should be either 10 or 13 digits
             # other length should be considered invalid (until the next digit
             # rollover at 2286-11-20  17:46:40 Z
-            next unless [10, 13].include?(Math.log10(num).to_i + 1)
+            # For user-defined precision also should handle here.
+            next unless @timestamp_digits.include?(Math.log10(num).to_i + 1)
             record['@timestamp'] = record['fluent_converted_timestamp'] =
               Time.at(
                 num / (10 ** ((Math.log10(num).to_i + 1) - 10))

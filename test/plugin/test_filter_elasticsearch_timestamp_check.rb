@@ -77,7 +77,7 @@ class TestElasticsearchTimestampCheckFilter < Test::Unit::TestCase
     timekey = data
     precision = 9
     d = create_driver(%[subsecond_precision #{precision}])
-    timestamp = '1505800348899'
+    timestamp = '1517878172013770000'
     d.run(default_tag: 'test') do
       d.feed({'test' => 'notime'}.merge(timekey => timestamp))
     end
@@ -86,6 +86,7 @@ class TestElasticsearchTimestampCheckFilter < Test::Unit::TestCase
     formatted_time = Time.at(
       num / (10 ** ((Math.log10(num).to_i + 1) - 10))
     ).strftime("%Y-%m-%dT%H:%M:%S.%#{precision}N%z")
+    assert_equal([10, 13, 10 + precision], d.instance.timestamp_digits)
     assert_true(filtered.key?("@timestamp"))
     assert_true(filtered.key?("fluent_converted_timestamp"))
     assert_equal(formatted_time, filtered["fluent_converted_timestamp"])
