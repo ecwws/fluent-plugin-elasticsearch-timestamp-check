@@ -33,6 +33,14 @@ elasticsearch.
 `subsecond_precision` controls the subsecond precision during the conversion.
 Default value is set to `3` (millisecond).
 
+Other `subsecond_precision` sample values are:
+
+* `6` (microsecond)
+* `9` (nanosecond)
+* `12` (picosecond)
+
+and more high precision is also supported.
+
 ## Usage
 
 ```
