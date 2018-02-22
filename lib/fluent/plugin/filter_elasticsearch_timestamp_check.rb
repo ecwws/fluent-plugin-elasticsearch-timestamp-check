@@ -63,7 +63,7 @@ module Fluent::Plugin
 
       unless record['fluent_converted_timestamp']
         record['@timestamp'] = record['fluent_added_timestamp'] =
-          Time.now.strftime(@strftime_format)
+          Time.at(time.is_a?(Fluent::EventTime) ? time.to_int : time).strftime(@strftime_format)
         $log.debug("Timestamp added: #{record['@timestamp']}")
       end
 
