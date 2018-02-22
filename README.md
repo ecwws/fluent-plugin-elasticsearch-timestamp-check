@@ -24,7 +24,7 @@ elasticsearch.
   in `@timestamp` field. In addition, a field `fluent_converted_timestamp`
   is added to the object with the same value.
 
-* If none of the above field exists, it will insert current time in
+* If none of the above field exists, it will insert current event time in
   '%Y-%m-%dT%H:%M:%S.%L%z' format as the `@timestamp` field. A field
   `fluent_added_timestamp` is added to the object with same value.
 
