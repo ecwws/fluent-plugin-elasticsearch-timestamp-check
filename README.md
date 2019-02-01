@@ -19,10 +19,15 @@ elasticsearch.
   such value is detected, it will be converted to iso8601 format for easier
   consumption of elasticsearch when dynamic mapping is used.**
 
-* If a field named `timestamp` or `time` or `syslog_timestamp` exists, it will
-  parse that field and conver it to format '%Y-%m-%dT%H:%M:%S.%L%z' then store it
-  in `@timestamp` field. In addition, a field `fluent_converted_timestamp`
-  is added to the object with the same value.
+* By default, it will check whether fields named `timestamp`, `time`, or
+  `syslog_timestamp` exists, if so it will parse that field and conver it to
+  format '%Y-%m-%dT%H:%M:%S.%L%z' then store it in `@timestamp` field. In
+  addition, a field `fluent_converted_timestamp` is added to the object with
+  the same value.
+
+* (>=0.3.0) the list of fields can be overriden by setting the
+  `timestamp_fields` parameter. It accepts a list of strings, the default is set
+  to: `['@timestamp', 'timestamp', 'time', 'syslog_timestamp']`
 
 * If none of the above field exists, it will insert current event time in
   '%Y-%m-%dT%H:%M:%S.%L%z' format as the `@timestamp` field. A field
