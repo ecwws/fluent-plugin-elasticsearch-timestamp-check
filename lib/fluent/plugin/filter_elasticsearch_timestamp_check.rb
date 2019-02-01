@@ -7,6 +7,7 @@ module Fluent::Plugin
     Fluent::Plugin.register_filter('elasticsearch_timestamp_check', self)
 
     config_param :subsecond_precision, :integer, default: 3
+    config_param :timestamp_fields, :array, default: ['@timestamp', 'timestamp', 'time', 'syslog_timestamp'], value_type: :string
 
     def configure(conf)
       super
@@ -33,7 +34,7 @@ module Fluent::Plugin
     end
 
     def filter(tag, time, record)
-      %w{@timestamp timestamp time syslog_timestamp}.map do |field|
+      @timestamp_fields.map do |field|
         record[field]
       end.compact.each do |timestamp|
         begin
@@ -58,6 +59,7 @@ module Fluent::Plugin
           $log.debug("Timestamp parsed: #{record['@timestamp']}")
           break
         rescue ArgumentError
+          $log.debug("#{field} (#{timestamp}) failed to parse, trying next")
         end
       end
 
